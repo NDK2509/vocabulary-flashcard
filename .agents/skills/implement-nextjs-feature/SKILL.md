@@ -1,76 +1,67 @@
 ---
-name: implement-react-feature
+name: implement-nextjs-feature
 description: >-
-  Developer procedure for implementing a requirements spec in this ReactJS (Vite + TypeScript)
-  project: scaffolding (if needed), coding conventions, unit/component tests with Vitest + React
-  Testing Library, the verify script (lint, typecheck, test, build), and the implementation notes
-  artifact. Use for the Dev stage of the pipeline and for fixing review/QA findings.
+  Developer procedure for implementing a requirements spec in this Next.js (App Router + TypeScript +
+  Tailwind CSS) project with strict mobile-first design principles, Server Components by default,
+  unit/component tests with Vitest + React Testing Library, verify quality gate, and implementation
+  notes. Use for the Dev stage of the delivery pipeline and for fixing review/QA findings.
 ---
 
-# Implement React Feature (Dev)
+# Implement Next.js Feature (Dev Stage)
 
 ## 1. Prepare
 
 - Read `docs/tasks/<task-id>/01-requirements.md`. On rework rounds also read `03-review.md`
   and/or `04-test-report.md` and make a checklist of every `BLOCKER`/`MAJOR` finding or bug.
-- `git status` must be clean of unrelated changes before you start.
+- Confirm `git status` is clean before starting.
 
-## 2. Scaffold (only if `package.json` does not exist)
+---
 
-```bash
-npm create vite@latest . -- --template react-ts
-npm install
-npm install -D vitest @vitest/coverage-v8 jsdom @testing-library/react \
-  @testing-library/user-event @testing-library/jest-dom \
-  eslint-plugin-jsx-a11y prettier @playwright/test
-```
+## 2. Mobile-First Implementation Workflow
 
-Then ensure these `package.json` scripts exist (the verify script depends on them):
+Follow [nextjs-conventions.md](./references/nextjs-conventions.md). Implement using the **Mobile-First** standard:
 
-```json
-{
-  "dev": "vite",
-  "build": "tsc -b && vite build",
-  "preview": "vite preview --port 4173",
-  "lint": "eslint .",
-  "typecheck": "tsc -b --noEmit",
-  "test": "vitest",
-  "test:coverage": "vitest run --coverage",
-  "test:e2e": "playwright test"
-}
-```
+1. **Design for Mobile First (360px–390px):**
+   - Write base CSS classes for mobile screens without media query prefixes.
+   - Scale up progressively using Tailwind breakpoints (`sm:`, `md:`, `lg:`).
+2. **Touch-Target Compliance:**
+   - Minimum 44px–48px height on all buttons, links, inputs, and interactive surfaces (`min-h-[44px]` or `min-h-[48px]`).
+   - Stack action buttons vertically on mobile (`w-full sm:w-auto`).
+3. **No Horizontal Overflow:**
+   - Use fluid containers (`w-full max-w-lg mx-auto px-4 sm:px-6`).
+   - Never hardcode fixed container widths (`w-[600px]` is prohibited).
+4. **Touch Ergonomics & Feedback:**
+   - Add instant tactile feedback on tap (`active:scale-[0.98]`).
+   - Ensure all actions are accessible via direct tap without relying on desktop hover.
+5. **Server Components by Default:**
+   - Keep components server-rendered unless interactivity, client hooks, or browser events require `'use client'`.
 
-Add a `test` block to `vite.config.ts` (`environment: 'jsdom'`, `globals: true`,
-`setupFiles: './src/test/setup.ts'` importing `@testing-library/jest-dom/vitest`), and exclude
-`e2e/**` from Vitest. Copy the Firebase Hosting files from the `deploy-firebase` skill
-(`resources/firebase.json` → `firebase.json`, `resources/firebaserc` → `.firebaserc`) into the
-repo root, and add `.firebase/` and `firebase-debug.log*` to `.gitignore`.
+---
 
-## 3. Implement
-
-Follow [react-conventions.md](./references/react-conventions.md). Key points:
-- Feature-based folders under `src/features/<feature>/`.
-- Function components + hooks, strict TypeScript (no `any`), no business logic in JSX.
-- Every AC maps to code **and** at least one test.
-- Config via `import.meta.env.VITE_*` only; document new vars in `.env.example`.
-
-## 4. Test
+## 3. Test (Unit & Component)
 
 - Colocate tests: `Component.test.tsx` next to `Component.tsx`.
-- Use RTL queries by role/label (`getByRole`, `getByLabelText`), `userEvent` for interaction.
-- Name tests after ACs: `it('AC-2: shows the back side when the card is clicked', ...)`.
+- Test user-visible behavior (RTL by role/label), simulate touch/click events.
+- Name tests after acceptance criteria: `it('AC-3: renders mobile-friendly full-width action button', ...)`.
+- Verify mobile responsiveness and touch accessibility in component tests.
 
-## 5. Verify (must pass)
+---
+
+## 4. Verify (Quality Gate Must Pass)
+
+Run the automated verification script:
 
 ```bash
-bash .agents/skills/implement-react-feature/scripts/verify.sh
+bash .agents/skills/implement-nextjs-feature/scripts/verify.sh
 ```
 
-Runs lint → typecheck → unit tests → production build. Fix and re-run until green.
+All four steps (`lint`, `typecheck`, `unit tests`, and `production build`) must report `PASS`.
+Fix any failures before proceeding to hand-off.
 
-## 6. Document
+---
 
-Write/update `docs/tasks/<task-id>/02-implementation.md` from
-[implementation-template.md](./resources/implementation-template.md). On rework rounds, append a
-"Round N" section listing each finding id and how it was fixed.
+## 5. Document
 
+Write/update `docs/tasks/<task-id>/02-implementation.md` using
+[implementation-template.md](./resources/implementation-template.md).
+Map each AC to its implementing file and automated test.
