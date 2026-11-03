@@ -1,0 +1,41 @@
+# Dependencies & build output
+node_modules/
+dist/
+.next/
+out/
+coverage/
+
+# Vercel
+.vercel/
+
+# Tests
+playwright-report/
+test-results/
+blob-report/
+
+# Firebase
+.firebase/
+firebase-debug.log*
+firebase-debug.*.log*
+
+# Env files (never commit secrets)
+.env
+.env.*
+!.env.example
+
+# Service account keys / credentials
+*-service-account*.json
+*credentials*.json
+
+# Logs & OS / editor
+*.log
+npm-debug.log*
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea/
+docs/
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
