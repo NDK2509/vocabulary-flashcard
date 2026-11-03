@@ -1,15 +1,12 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
+import { getUser } from '@/actions/auth';
 import { query } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
 
   if (!user) {
     redirect('/login?redirectTo=/dashboard');
@@ -46,7 +43,7 @@ export default async function DashboardPage() {
           <div className="mt-2 text-2xl font-semibold text-blue-600 dark:text-blue-400">
             {dbStatus}
           </div>
-          <div className="mt-1 text-xs text-gray-400">Supabase PostgreSQL 17</div>
+          <div className="mt-1 text-xs text-gray-400">PostgreSQL 17 direct pool</div>
         </div>
 
         <div className="p-5 sm:p-6 bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-xs sm:col-span-2 md:col-span-1">
@@ -66,12 +63,20 @@ export default async function DashboardPage() {
             Start Flashcard Review
           </Link>
           <a
+            href="/api/auth/me"
+            target="_blank"
+            rel="noreferrer"
+            className="w-full sm:w-auto min-h-[48px] flex items-center justify-center px-5 py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-200 text-sm font-semibold rounded-xl transition active:scale-[0.98]"
+          >
+            Inspect Current Session (/api/auth/me)
+          </a>
+          <a
             href="/api/health"
             target="_blank"
             rel="noreferrer"
             className="w-full sm:w-auto min-h-[48px] flex items-center justify-center px-5 py-3 bg-gray-100 hover:bg-gray-200 text-gray-800 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-200 text-sm font-semibold rounded-xl transition active:scale-[0.98]"
           >
-            Inspect Backend API Health (/api/health)
+            Backend Health (/api/health)
           </a>
         </div>
       </div>

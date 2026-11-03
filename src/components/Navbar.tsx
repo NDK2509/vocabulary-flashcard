@@ -1,13 +1,9 @@
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/server';
-import { signOut } from '@/actions/auth';
+import { getUser, signOut } from '@/actions/auth';
 import { MobileMenu } from './MobileMenu';
 
 export async function Navbar() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
 
   return (
     <header className="border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur sticky top-0 z-50">
@@ -55,7 +51,7 @@ export async function Navbar() {
               <form action={signOut}>
                 <button
                   type="submit"
-                  className="min-h-[40px] px-3.5 py-2 rounded-lg text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-800 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-200 active:scale-[0.98] transition"
+                  className="min-h-[40px] px-3.5 py-2 rounded-lg text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-800 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-200 active:scale-[0.98] transition cursor-pointer"
                 >
                   Sign Out
                 </button>

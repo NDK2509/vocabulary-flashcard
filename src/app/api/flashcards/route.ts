@@ -1,12 +1,9 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { getCurrentUser } from '@/lib/auth';
 import { query } from '@/lib/db';
 
 export async function GET() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -23,13 +20,13 @@ export async function GET() {
     `);
 
     if (tableExists[0]?.exists) {
-      const rows = await query('SELECT * FROM public.flashcards WHERE user_id = $1 ORDER BY created_at DESC', [
-        user.id,
-      ]);
+      const rows = await query(
+        'SELECT * FROM public.flashcards WHERE user_id = $1 ORDER BY created_at DESC',
+        [user.id]
+      );
       return NextResponse.json({ flashcards: rows });
     }
 
-    // Default response if table is not migrated yet
     return NextResponse.json({
       flashcards: [],
       message: 'Flashcards table not yet created. Run migration to enable persistent storage.',
@@ -41,10 +38,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -61,7 +55,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Attempt insert into public.flashcards if created
     const inserted = await query(
       `INSERT INTO public.flashcards (user_id, word, definition, part_of_speech, example)
        VALUES ($1, $2, $3, $4, $5)
@@ -75,4 +68,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ error }, { status: 500 });
   }
 }
-

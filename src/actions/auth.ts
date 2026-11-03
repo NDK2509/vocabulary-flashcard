@@ -2,18 +2,20 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
+import {
+  getCurrentUser,
+  authenticateUser,
+  registerUser,
+  logoutUser,
+  setAuthSessionCookie,
+} from '@/lib/auth';
 
 export async function getUser() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  return user;
+  return await getCurrentUser();
 }
 
 export async function signIn(formData: FormData): Promise<void> {
-  const email = formData.get('email') as string;
+  const email = (formData.get('email') as string)?.trim();
   const password = formData.get('password') as string;
   const redirectTo = (formData.get('redirectTo') as string) || '/dashboard';
 
@@ -21,14 +23,12 @@ export async function signIn(formData: FormData): Promise<void> {
     redirect(`/login?error=${encodeURIComponent('Email and password are required')}`);
   }
 
-  const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  if (error) {
-    redirect(`/login?error=${encodeURIComponent(error.message)}`);
+  try {
+    const { signedToken } = await authenticateUser(email, password);
+    await setAuthSessionCookie(signedToken);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Invalid email or password';
+    redirect(`/login?error=${encodeURIComponent(message)}`);
   }
 
   revalidatePath('/', 'layout');
@@ -36,30 +36,32 @@ export async function signIn(formData: FormData): Promise<void> {
 }
 
 export async function signUp(formData: FormData): Promise<void> {
-  const email = formData.get('email') as string;
+  const email = (formData.get('email') as string)?.trim();
   const password = formData.get('password') as string;
 
   if (!email || !password) {
     redirect(`/register?error=${encodeURIComponent('Email and password are required')}`);
   }
 
-  const supabase = await createClient();
-  const { error } = await supabase.auth.signUp({
-    email,
-    password,
-  });
+  if (password.length < 6) {
+    redirect(`/register?error=${encodeURIComponent('Password must be at least 6 characters')}`);
+  }
 
-  if (error) {
-    redirect(`/register?error=${encodeURIComponent(error.message)}`);
+  try {
+    const { signedToken } = await registerUser(email, password);
+    // Instant login without email verification
+    await setAuthSessionCookie(signedToken);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Registration failed';
+    redirect(`/register?error=${encodeURIComponent(message)}`);
   }
 
   revalidatePath('/', 'layout');
-  redirect(`/login?message=${encodeURIComponent('Account created successfully! Please sign in.')}`);
+  redirect('/dashboard');
 }
 
 export async function signOut(): Promise<void> {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
+  await logoutUser();
   revalidatePath('/', 'layout');
   redirect('/login');
 }

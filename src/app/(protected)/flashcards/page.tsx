@@ -1,14 +1,11 @@
 import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
+import { getUser } from '@/actions/auth';
 import { FlashcardDeck } from '@/features/flashcards/components/FlashcardDeck';
 
 export const dynamic = 'force-dynamic';
 
 export default async function FlashcardsPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
 
   if (!user) {
     redirect('/login?redirectTo=/flashcards');

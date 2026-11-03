@@ -1,20 +1,17 @@
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/server';
+import { getUser } from '@/actions/auth';
 
 export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getUser();
 
   return (
     <div className="flex-1 flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8 py-8 sm:py-16 w-full">
       <div className="max-w-4xl w-full text-center space-y-6 sm:space-y-8">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          Next.js App Router + Supabase Auth
+          Next.js App Router + Custom Auth API
         </div>
 
         <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight leading-tight sm:leading-none">
@@ -25,8 +22,8 @@ export default async function HomePage() {
         </h1>
 
         <p className="max-w-2xl mx-auto text-base sm:text-lg text-gray-600 dark:text-gray-300">
-          A full-stack application built with Next.js 16 (App Router + Server Actions), Supabase SSR
-          Authentication, and PostgreSQL database storage.
+          A full-stack application built with Next.js 16 (App Router + Server Actions), custom
+          PostgreSQL-backed Authentication API, and PostgreSQL database storage.
         </p>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 pt-4 w-full sm:w-auto max-w-md sm:max-w-none mx-auto">
@@ -67,10 +64,10 @@ export default async function HomePage() {
         <div className="pt-8 sm:pt-16 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 text-left">
           <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-xs space-y-2">
             <div className="text-2xl">🔒</div>
-            <h3 className="font-bold text-base">Supabase SSR Auth</h3>
+            <h3 className="font-bold text-base">Custom Auth API</h3>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              Cookie-based session synchronization across Next.js Server Components, Server
-              Actions, and Client Components via <code className="text-blue-500">@supabase/ssr</code>.
+              Direct REST endpoints (`/api/auth/*`) and Server Actions with scrypt password hashing
+              and secure HttpOnly session cookies.
             </p>
           </div>
 
@@ -79,17 +76,17 @@ export default async function HomePage() {
             <h3 className="font-bold text-base">Protected Routes</h3>
             <p className="text-xs text-gray-500 dark:text-gray-400">
               Edge middleware guarding <code className="text-blue-500">/dashboard</code> and{' '}
-              <code className="text-blue-500">/flashcards</code> with token validation via{' '}
-              <code className="text-blue-500">getUser()</code>.
+              <code className="text-blue-500">/flashcards</code> with cryptographic session validation.
             </p>
           </div>
 
           <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-xs space-y-2">
             <div className="text-2xl">⚡</div>
-            <h3 className="font-bold text-base">Full-Stack Architecture</h3>
+            <h3 className="font-bold text-base">PostgreSQL 17 Storage</h3>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              Direct connection pooling to Supabase PostgreSQL 17 plus REST Route Handlers in{' '}
-              <code className="text-blue-500">src/app/api/*</code>.
+              Dedicated <code className="text-blue-500">users</code> and{' '}
+              <code className="text-blue-500">sessions</code> relational tables pooled via{' '}
+              <code className="text-blue-500">pg</code>.
             </p>
           </div>
         </div>
